@@ -1,6 +1,6 @@
 #include "Wire.h"
 #include "VL53L0X.h"
-#include "setup.h"
+#include "setup_mega.h"
 
 void main_motor_control_system(double,double,double,long,int);
 void sub_motor_control_system(int,int,int);
@@ -9,7 +9,7 @@ void MDM67H4504CH_control_system(int,int,int,int,long,int);
 void LDM46165CH_contorl_system(int,int,int,int,long);
 
 //motor controal system
-#define RPM_63_1 0
+#define RPM_63_1 225
 #define wide_a 0
 #define wide_b 0
 #define Rw 0
@@ -23,8 +23,8 @@ typedef struct{
 } MDM66126CH_n;
 MDM66126CH_n MDM66126CH;
 typedef struct{
-    const int GPIO_IN_1[4] = {15,12,10,6};
-    const int GPIO_IN_2[4] = {16,13,11,9};
+    const int GPIO_IN_1[4] = {3,6,8,12};
+    const int GPIO_IN_2[4] = {2,5,7,11};
     const bool active = true;
 } MDM67H4504CH_n;
 MDM67H4504CH_n MDM67H4504CH;
@@ -69,7 +69,9 @@ void setup()
 
 void loop() 
 { 
-    LDM46165CH_contorl_system(off,off,off,on,1000);
+    //LDM46165CH_contorl_system(off,off,off,on,1000);
+    MDM67H4504CH_control_system(0,0,0,0,0,no_motion);
+    delay(200);
 }
 
 void main_motor_control_system(double speed,double running_angle,double spin_angle,long time,int final_motion){
@@ -156,19 +158,19 @@ void MDM67H4504CH_control_system(int a,int b,int c,int d,long time,int final_mot
         if(num[i] != 0){
             if(num[i] > 0){
                 constrain(num[i],0,100);
-                analogWrite(MDM67H4504CH.GPIO_IN_1[i],map(num[i],0,100,0,255));
+                analogWrite(MDM67H4504CH.GPIO_IN_1[i],map(num[i],0,100,12,255));
                 analogWrite(MDM67H4504CH.GPIO_IN_2[i],0);
             } else if(num[i] < 0){
                 num[i] = num[i] * -1;
                 constrain(num[i],0,100);
                 analogWrite(MDM67H4504CH.GPIO_IN_1[i],0);
-                analogWrite(MDM67H4504CH.GPIO_IN_2[i],map(num[i],0,100,0,255));
+                analogWrite(MDM67H4504CH.GPIO_IN_2[i],map(num[i],0,100,12,255));
             }
             if(time != 0) delay(time);
         }
     }
     if(final_motion != 0){
-        for(int i = 0;i < 6;i++){
+        for(int i = 0;i < 4;i++){
             if(num[i] == 0){
                 if(final_motion == 1){
                     analogWrite(MDM67H4504CH.GPIO_IN_1[i],0);

@@ -7,6 +7,7 @@ void sub_motor_control_system(int,int,int);
 void MDM66126CH_control_system(int,int,int,int,long,int);
 void MDM67H4504CH_control_system(int,int,int,int,long,int);
 void LDM46165CH_contorl_system(int,int,int,int,long);
+int Get_Button_State(int);
 
 //motor controal system
 #define RPM_63_1 225
@@ -31,8 +32,9 @@ MDM67H4504CH_n MDM67H4504CH;
 
 //PTM750225CH and LDM46165CH GPIO setup
 typedef struct{
-    const uint8_t GPIO_IN_DIGITAL[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+    const int GPIO_IN_DIGITAL[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
     const int GPIO_IN_ANALOG[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+    const int GPIO_IN_Color[4] = {0,0,0,0};
 } PTM750225CH_n;
 PTM750225CH_n PTM750225CH;
 typedef struct{
@@ -40,6 +42,13 @@ typedef struct{
     const uint8_t GPIO_IN_RGB[3] = {26,24,22};
 } LDM46165CH_n;
 LDM46165CH_n LDM46165CH;
+
+//sensor value
+typedef struct{
+    int color[4];
+} Sensor_Value_n;
+Sensor_Value_n Sensor_Value;
+
 
 //VL53L0X setup
 #define SENSOR_NUM 8
@@ -49,6 +58,7 @@ const int GPIO_MASK_ARRAY[SENSOR_NUM] = {0,0,0,0,0,0,0,0};
 VL53L0X gSensor[SENSOR_NUM];
 
 int waiting_time = 0;
+int count = 0;
 
 void setup()
 {
@@ -63,15 +73,40 @@ void setup()
     for(int i = 0;i < 2;i++) pinMode(LDM46165CH.GPIO_IN_WHITE[i],OUTPUT);
     for(int i = 0;i < 3;i++) pinMode(LDM46165CH.GPIO_IN_RGB[i],OUTPUT);
 
+    pinMode(34,INPUT);
+    pinMode(32,INPUT);
+
     //I2C setup
     Wire.begin(7);
+
+    Serial.begin(9600);
 }
 
 void loop() 
 { 
-    //LDM46165CH_contorl_system(off,off,off,on,1000);
-    MDM67H4504CH_control_system(0,0,0,0,0,no_motion);
-    delay(200);
+    // for(;;){
+    //     if(Get_Button_State(GREEN) == 1){
+    //         count++;
+    //         break;
+    //     } else {
+    //         delay(100);
+    //     }
+    // }
+    // if(count == 6) count = 0;
+    // if(count == 0) LDM46165CH_contorl_system(on,off,off,off,0);
+    // if(count == 1) LDM46165CH_contorl_system(off,on,off,off,0);
+    // if(count == 2) LDM46165CH_contorl_system(off,off,on,off,0);
+    // if(count == 3) LDM46165CH_contorl_system(off,off,off,on,0);
+    // if(count == 4) LDM46165CH_contorl_system(on,off,on,off,0);
+    // if(count == 5) LDM46165CH_contorl_system(off,off,off,off,0);
+    // delay(200);
+
+
+    //if(count == 0){
+        sub_motor_control_system(second_motor,30,30);
+    //}
+    delay(1000);
+    count = 1;
 }
 
 void main_motor_control_system(double speed,double running_angle,double spin_angle,long time,int final_motion){
@@ -129,27 +164,25 @@ void sub_motor_control_system(int mode,int angle,int speed){
         delay(waiting_time - now_time);
     }
     waiting_time = 0;
+
     constrain(angle,-360,360);
     map(speed,0,100,0,255);
     constrain(speed,0,255);
+
     Wire.beginTransmission(8);
     Wire.write(mode);
     Wire.endTransmission();
     delay(10);
-    if(angle < 0) angle = angle + 1000;
+
     Wire.beginTransmission(8);
     Wire.write(angle);
     Wire.endTransmission();
     delay(10);
+
     Wire.beginTransmission(8);
     Wire.write(speed);
     Wire.endTransmission();
-    delay(10);
-    Wire.requestFrom(8,6);
-    while(Wire.available()){
-        waiting_time =  Wire.read();
-    }
-    waiting_time += millis(); 
+    delay(100);
 }
 
 void MDM67H4504CH_control_system(int a,int b,int c,int d,long time,int final_motion){
@@ -205,7 +238,7 @@ void MDM66126CH_control_system(int x_a,int x_b,int y_a,int y_b,int z,long time,i
     }
     if(final_motion != 0){
         for(int i = 0;i < 6;i++){
-            if(num[1] == 0){
+            if(num[i] == 0){
                 if(final_motion == 1){
                     digitalWrite(MDM66126CH.GPIO_IN_1[i],LOW);
                     digitalWrite(MDM66126CH.GPIO_IN_2[i],LOW);
@@ -239,4 +272,59 @@ void LDM46165CH_contorl_system(int r,int g,int b,int w,long time){
     if(time != 0) delay(time);
 }
 
+int Get_Button_State(int num){
+    int state;
+    if(num == GREEN){
+        state = digitalRead(32);
+        if(state == 1){
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+    if(num == RED){
+        state = digitalRead(34);
+        if(state == 1){
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+}
 
+void Color_sensor_get_value(int continue_time){
+    int red[4],green[4],blue[4];
+    for(int p = 0;p < continue_time;p++){
+        LDM46165CH_contorl_system(ON,OFF,OFF,OFF,2); //red
+        for(int i = 0;i < 4;i++){
+            if(continue_time == 0){
+                red[i] = analogRead(PTM750225CH.GPIO_IN_Color[i]); //get red reflect
+                delay(2);
+            } else {
+                red[i] = (red[i] + analogRead(PTM750225CH.GPIO_IN_Color[i])) / 2; //get red reflect
+                delay(2);
+            }
+        }
+        LDM46165CH_contorl_system(OFF,ON,OFF,OFF,2); //green
+        for(int i = 0; i < 4;i++){
+            if(continue_time == 0){
+                green[i] = analogRead(PTM750225CH.GPIO_IN_Color[i]); //get green reflect
+                delay(2);
+            } else {
+                green[i] = (green[i] + analogRead(PTM750225CH.GPIO_IN_Color[i])) / 2; //get green reflect
+                delay(2);
+            }
+        }
+        LDM46165CH_contorl_system(OFF,OFF,ON,OFF,2); //blue
+        for(int i = 0;i < 4;i++){
+            if(continue_time == 0){
+                blue[i] = analogRead(PTM750225CH.GPIO_IN_Color[i]); //get blue reflect
+                delay(2);
+            } else {
+                blue[i] = (blue[i] + analogRead(PTM750225CH.GPIO_IN_Color[i])) / 2; //get blue reflect
+                delay(2);
+            }
+        }
+    }
+    
+}

@@ -18,3 +18,6 @@ Arduino(3年前は EV3RT),M5stack,kobuki,Fusion360,KiCad などをやってい�
 
 Kaiyo Academy Robot Club Rescue Department Manager (2021)
 
+## License
+MIT
+

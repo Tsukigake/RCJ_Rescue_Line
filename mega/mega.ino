@@ -33,6 +33,7 @@ void LDM46165CH_contorl_system(int,int,int,int,long);
 int Get_Button_State(int);
 void Color_sensor_get_value(int);
 void Vl53L0X_contorl_system();
+void M5stack_contorl_system(int);
 
 //motor controal system
 #define RPM_63_1 225
@@ -512,5 +513,9 @@ void VL53L0X_contorl_system(int mode,int VL53L0X_setting){
     default:
         break;
     }    
+}
+
+void M5stack_contorl_system(int mode){
+
 }
 

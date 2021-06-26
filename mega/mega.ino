@@ -32,8 +32,8 @@ void MDM67H4504CH_control_system(int,int,int,int,long,int);
 void LDM46165CH_contorl_system(int,int,int,int,long);
 int Get_Button_State(int);
 void Color_sensor_get_value(int);
-void Vl53L0X_contorl_system();
-void M5stack_contorl_system(int);
+void Vl53L0X_contorl_system(int,int);
+int M5stack_contorl_system(int);
 
 //motor controal system
 #define RPM_63_1 225
@@ -83,6 +83,8 @@ typedef struct{
     int VL53L0X_first_situation_x;
     int VL53L0X_first_situation_y;
     int VL53L0X_first_situation_angle;
+    int Reference_angle_x;
+    int Reference_angle_y;
 } rescue_zone_n;
 rescue_zone_n rescue_zone;
 
@@ -95,10 +97,15 @@ int coordinate_map_second_zone[120][90];
 #define ADDRESS_DEFALUT 0b0101001 // 0x29
 #define ADDRESS_00 (ADDRESS_DEFALUT + 2)
 const int GPIO_MASK_ARRAY[SENSOR_NUM] = {38,40,42,44,46,48,50,52};
+bool VL53L0X_GPIO_ERROR[8];
+const bool VL53L0X_SERIAL_OUTPUT = true;
 VL53L0X gSensor[SENSOR_NUM];
 
 void setup()
 {
+    Wire.begin(7);  //I2C setup
+    Serial.begin(9600); //serial setup
+
     //moter,ft sensor,led pinmode setup
     if(MDM66126CH.active == false && MDM67H4504CH.active == true){
         for(int i = 0;i < 6;i++){
@@ -125,23 +132,28 @@ void setup()
             gSensor[i].setTimeout(500);
             int address = ADDRESS_00 + (i * 2);
             gSensor[i].setAddress(address);
+            VL53L0X_GPIO_ERROR[i] = false;
+            if(VL53L0X_SERIAL_OUTPUT == true){
+                Serial.print("Sensor ");
+                Serial.print(i);
+                Serial.println(" ok");
+            }
         } else {
-            Serial.print("Sensor ");
-            Serial.print(i);
-            Serial.println(" error");
+            VL53L0X_GPIO_ERROR[i] = true;
+            if(VL53L0X_SERIAL_OUTPUT == true){
+                Serial.print("Sensor ");
+                Serial.print(i);
+                Serial.println(" error");
+            }
         }
     }
-
-    Wire.begin(7);  //I2C setup
-    Serial.begin(9600); //serial setup
 }
 
 void loop() 
 { 
-    LDM46165CH_contorl_system(OFF,OFF,OFF,ON,0);
-
-    //MDM67H4504CH_control_system(0,0,0,50,2000,stop);
-    delay(10000);
+    //VL53L0X_contorl_system(distance_mode,DEFAULT);
+    //Serial.println(Sensor_Value.distance[0]);
+    delay(50);
 }
 
 void main_motor_control_system(double speed,double running_angle,double spin_angle,long time,int final_motion){
@@ -367,41 +379,60 @@ void Color_sensor_get_value(int continue_time){
 void VL53L0X_contorl_system(int mode,int VL53L0X_setting){
     int VL53L0X_distace[8];
     bool change_setup = false;
+    bool high_speed_mode;
+    int M5_gyro_yaw;
     switch(mode){
     case distance_mode:
         switch(VL53L0X_setting){
         case DEFAULT:
             if(change_setup == true){
                 for(int i = 0;i < SENSOR_NUM;i++){
-                    gSensor[i].setSignalRateLimit(0.25);
-                    gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
-                    gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
-                    gSensor[i].setMeasurementTimingBudget(33);
-                    gSensor[i].setMeasurementTimingBudget(200);
+                    if(VL53L0X_GPIO_ERROR[i] == false){
+                        if(gSensor[i].timeoutOccurred() == false){
+                            gSensor[i].setSignalRateLimit(0.25);
+                            gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
+                            gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
+                            gSensor[i].setMeasurementTimingBudget(33);
+                            gSensor[i].setMeasurementTimingBudget(200);
+                        }
+                    }
                 }
                 change_setup = false;
             }
             break;
         case LONG_RANGE:
             for(int i = 0;i < SENSOR_NUM;i++){
-                // lower the return signal rate limit (default is 0.25 MCPS)
-                gSensor[i].setSignalRateLimit(0.1);
-                // increase laser pulse periods (defaults are 14 and 10 PCLKs)
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,18);
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,14);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        // lower the return signal rate limit (default is 0.25 MCPS)
+                        gSensor[i].setSignalRateLimit(0.1);
+                        // increase laser pulse periods (defaults are 14 and 10 PCLKs)
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,18);
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,14);
+                    }
+                }
             }
             change_setup = true;
             break;
         case HIGH_SPEED:
+            high_speed_mode = true;
             for(int i = 0;i < SENSOR_NUM;i++){
-                // reduce timing budget to 20 ms (default is about 33 ms)
-                gSensor[i].setMeasurementTimingBudget(20000);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        // reduce timing budget to 20 ms (default is about 33 ms)
+                        gSensor[i].setMeasurementTimingBudget(20000);
+                    }
+                }
                 change_setup = true;
             }
         case HIGH_ACCURACY:
             for(int i = 0;i < SENSOR_NUM;i++){
-                // increase timing budget to 200 ms
-                gSensor[i].setMeasurementTimingBudget(200000);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        // increase timing budget to 200 ms
+                        gSensor[i].setMeasurementTimingBudget(200000);
+                    }
+                }
                 change_setup = true;
             }
         default:
@@ -409,23 +440,41 @@ void VL53L0X_contorl_system(int mode,int VL53L0X_setting){
         }
         for(int i = 0;i < SENSOR_NUM;i++){
             Sensor_Value.distance[i] = 0;
-            for(int p = 0;p < 2;p++){
-                Sensor_Value.distance[i] += gSensor[i].readRangeSingleMillimeters();
-                if(p == 1){
-                    Sensor_Value.distance[i] = Sensor_Value.distance[i] / 2;
+            if(high_speed_mode == true){
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    Sensor_Value.distance[i] = gSensor[i].readRangeSingleMillimeters();
+                    if(gSensor[i].timeoutOccurred()){
+                        Sensor_Value.distance[i] = -1;
+                    }
                 }
-            }
-            if(gSensor[i].timeoutOccurred()){
-                Sensor_Value.distance[i] = -1;
+                high_speed_mode = false;
+            } else if(high_speed_mode == false){
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    for(int p = 0;p < 2;p++){
+                        Sensor_Value.distance[i] += gSensor[i].readRangeSingleMillimeters();
+                        if(p == 1){
+                            Sensor_Value.distance[i] = Sensor_Value.distance[i] / 2;
+                        }   
+                    }
+                    if(gSensor[i].timeoutOccurred()){
+                        Sensor_Value.distance[i] = -1;
+                    }
+                } else if(VL53L0X_GPIO_ERROR[i] == true){
+                    Sensor_Value.distance[i] = -1;
+                }
             }
         }
         if(change_setup == true){
             for(int i = 0;i < SENSOR_NUM;i++){
-                gSensor[i].setSignalRateLimit(0.25);
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
-                gSensor[i].setMeasurementTimingBudget(33);
-                gSensor[i].setMeasurementTimingBudget(200);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        gSensor[i].setSignalRateLimit(0.25);
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
+                        gSensor[i].setMeasurementTimingBudget(33);
+                        gSensor[i].setMeasurementTimingBudget(200);
+                    }
+                }
             }
             change_setup = false;
         }
@@ -433,11 +482,15 @@ void VL53L0X_contorl_system(int mode,int VL53L0X_setting){
     case coordinate_setup_mode:
         if(change_setup == true){
             for(int i = 0;i < SENSOR_NUM;i++){
-                gSensor[i].setSignalRateLimit(0.25);
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
-                gSensor[i].setMeasurementTimingBudget(33);
-                gSensor[i].setMeasurementTimingBudget(200);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        gSensor[i].setSignalRateLimit(0.25);
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
+                        gSensor[i].setMeasurementTimingBudget(33);
+                        gSensor[i].setMeasurementTimingBudget(200);
+                    }
+                }
             }
             change_setup = false;
         }
@@ -455,57 +508,126 @@ void VL53L0X_contorl_system(int mode,int VL53L0X_setting){
         }
         if(VL53L0X_distace[7] > 90 || VL53L0X_distace[8] > 90){
             if(abs(VL53L0X_distace[5] - VL53L0X_distace[6]) != 0){
-                
+                if(VL53L0X_distace[5] > VL53L0X_distace[6]){
+                    while(abs(VL53L0X_distace[5] - VL53L0X_distace[6]) < 10){
+                        main_motor_control_system(0,0,-10,100,stop);
+                        VL53L0X_distace[5] = gSensor[5].readRangeSingleMillimeters();
+                        VL53L0X_distace[6] = gSensor[6].readRangeSingleMillimeters();
+                    }
+                } else if(VL53L0X_distace[5] < VL53L0X_distace[6]){
+                    while(abs(VL53L0X_distace[5] - VL53L0X_distace[6]) < 10){
+                        main_motor_control_system(0,0,10,100,stop);
+                        VL53L0X_distace[5] = gSensor[5].readRangeSingleMillimeters();
+                        VL53L0X_distace[6] = gSensor[6].readRangeSingleMillimeters();
+                    }
+                }
+            }
+            if(VL53L0X_distace[5] == 8190 || VL53L0X_distace[6] == 8190){
+                while(VL53L0X_distace[5] != 8190 && VL53L0X_distace[6] != 8190){
+                    main_motor_control_system(30,0,0,200,stop);
+                    VL53L0X_distace[5] = gSensor[5].readRangeSingleMillimeters();
+                    VL53L0X_distace[6] = gSensor[6].readRangeSingleMillimeters();
+                }
             }
         }
-
+        M5_gyro_yaw = M5stack_contorl_system(M5_GYRO,yaw);
+        for(int i = 0;i < SENSOR_NUM;i++){
+            
+        }
         break;
     case coordinate_mode:
         switch(VL53L0X_setting){
         case DEFAULT:
             if(change_setup == true){
                 for(int i = 0;i < SENSOR_NUM;i++){
-                    gSensor[i].setSignalRateLimit(0.25);
-                    gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
-                    gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
-                    gSensor[i].setMeasurementTimingBudget(33);
-                    gSensor[i].setMeasurementTimingBudget(200);
+                    if(VL53L0X_GPIO_ERROR[i] == false){
+                        if(gSensor[i].timeoutOccurred() == false){
+                            gSensor[i].setSignalRateLimit(0.25);
+                            gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
+                            gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
+                            gSensor[i].setMeasurementTimingBudget(33);
+                            gSensor[i].setMeasurementTimingBudget(200);
+                        }
+                    }
                 }
                 change_setup = false;
             }
             break;
         case LONG_RANGE:
             for(int i = 0;i < SENSOR_NUM;i++){
-                // lower the return signal rate limit (default is 0.25 MCPS)
-                gSensor[i].setSignalRateLimit(0.1);
-                // increase laser pulse periods (defaults are 14 and 10 PCLKs)
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,18);
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,14);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        // lower the return signal rate limit (default is 0.25 MCPS)
+                        gSensor[i].setSignalRateLimit(0.1);
+                        // increase laser pulse periods (defaults are 14 and 10 PCLKs)
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,18);
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,14);
+                    }
+                }
             }
             change_setup = true;
             break;
         case HIGH_SPEED:
+            high_speed_mode = true;
             for(int i = 0;i < SENSOR_NUM;i++){
-                // reduce timing budget to 20 ms (default is about 33 ms)
-                gSensor[i].setMeasurementTimingBudget(20000);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        // reduce timing budget to 20 ms (default is about 33 ms)
+                        gSensor[i].setMeasurementTimingBudget(20000);
+                    }
+                }
                 change_setup = true;
             }
         case HIGH_ACCURACY:
             for(int i = 0;i < SENSOR_NUM;i++){
-                // increase timing budget to 200 ms
-                gSensor[i].setMeasurementTimingBudget(200000);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        // increase timing budget to 200 ms
+                        gSensor[i].setMeasurementTimingBudget(200000);
+                    }
+                }
                 change_setup = true;
             }
         default:
             break;
         }
+        for(int i = 0;i < SENSOR_NUM;i++){
+            Sensor_Value.distance[i] = 0;
+            if(high_speed_mode == true){
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    VL53L0X_distace[i] = gSensor[i].readRangeSingleMillimeters();
+                    if(gSensor[i].timeoutOccurred()){
+                        VL53L0X_distace[i] = -1;
+                    }
+                }
+                high_speed_mode = false;
+            } else if(high_speed_mode == false){
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    for(int p = 0;p < 2;p++){
+                        VL53L0X_distace[i] += gSensor[i].readRangeSingleMillimeters();
+                        if(p == 1){
+                            VL53L0X_distace[i] = VL53L0X_distace[i] / 2;
+                        }   
+                    }
+                    if(gSensor[i].timeoutOccurred()){
+                        VL53L0X_distace[i] = -1;
+                    }
+                } else if(VL53L0X_GPIO_ERROR[i] == true){
+                    VL53L0X_distace[i] = -1;
+                }
+            }
+        }
         if(change_setup == true){
             for(int i = 0;i < SENSOR_NUM;i++){
-                gSensor[i].setSignalRateLimit(0.25);
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
-                gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
-                gSensor[i].setMeasurementTimingBudget(33);
-                gSensor[i].setMeasurementTimingBudget(200);
+                if(VL53L0X_GPIO_ERROR[i] == false){
+                    if(gSensor[i].timeoutOccurred() == false){
+                        gSensor[i].setSignalRateLimit(0.25);
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange,14);
+                        gSensor[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange,10);
+                        gSensor[i].setMeasurementTimingBudget(33);
+                        gSensor[i].setMeasurementTimingBudget(200);
+                    }
+                }
             }
             change_setup = false;
         }
@@ -515,7 +637,7 @@ void VL53L0X_contorl_system(int mode,int VL53L0X_setting){
     }    
 }
 
-void M5stack_contorl_system(int mode){
+int M5stack_contorl_system(int mode,int a){
 
 }
 

@@ -1,3 +1,5 @@
+//main system
+
 //MDM control system
 #define no_motion   0
 #define stop        1
@@ -11,15 +13,6 @@
 #define GREEN   0
 #define RED     1
 
-//I2C
-#define first_motor_x   1
-#define first_motor_y   2
-#define first_motor     3
-#define second_motor_x  4
-#define second_motor_y  5
-#define second_motor    6
-#define third_motor     8
-
 //VL53L0X
 #define DEFAULT                 0
 #define LONG_RANGE              1
@@ -29,6 +22,10 @@
 #define coordinate_setup_mode   1
 #define coordinate_mode         2
 
+//Line sensor
+#define ANALOG  0
+#define DIGITAL 1
+#define ANALOG_THRESHOLD    10
 
 //line sensor
 //  A15 GIA01   D49 GID03   A11 GIA05   D39 GID08   A06 GIA10

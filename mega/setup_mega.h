@@ -1,9 +1,19 @@
 //main system
+#define Victim_zone         0
+#define Detect_Green_crossroads   1
+#define Termination         2
+#define Detect_obstacle     3
+#define Line_tracking       4
+#define Blank_Line          0
+#define Edge_Line           1
+#define Normal_Line         2
+#define Crossroads_Line     3
 
 //MDM control system
 #define no_motion   0
 #define stop        1
-#define brake       2
+#define black       2
+#define RR_Spead_195    0.0020311   //Reference rotation speed 195:1 angle / 1duty ratio * 1ms
 
 //LED
 #define ON      1
@@ -27,16 +37,22 @@
 #define DIGITAL 1
 #define ANALOG_THRESHOLD    10
 
+//I2C
+#define Arduino_maga    0x10
+#define Arduino_nano    0x11	
+#define M5stack_core2   0x12
+#define BSCS            0x13
+
 //line sensor
-//  A15 GIA01   D49 GID03   A11 GIA05   D39 GID08   A06 GIA10
+//  15_A13_53   25_D43_12   35_A08_62   45_D33_31   55_A04_81
 //
-//  D53 GID01   D47 GID04   A10 GIA06   D37 GID09   D31 GID12
+//  14_D51_43   24_D45_93   34_A09_52   44_D35_21   54_D29_71
 //
-//  A14 GIA02   A12 GIA04   D41 GID07   A07 GIA09   A05 GIA11
+//  13_A14_33   23_A12_83   33_D41_42   43_A07_92   53_A05_61
 //
-//  D51 GID02   D45 GID05   A09 GIA07   D35 GID10   D29 GID13
+//  12_D53_23   22_D47_73   32_A10_32   42_D37_82   52_D31_51
 //
-//  A13 GIA03   D43 GID06   A08 GIA08   D33 GID11   A04 GIA12
+//  11_A15_13   21_D49_63   31_A11_22   41_D39_72   51_A06_41
 
 //color sensor
 //  A15 GIC01   A06 GIC02
@@ -50,6 +66,11 @@
 //
 //      3
 
+//git add xxxx.html
+//git commit -m "[Add] xxxx"
+//git push origin main
+
+//git remote add origin https://github.com/kamiokannde/poseidon.git
 
 
 

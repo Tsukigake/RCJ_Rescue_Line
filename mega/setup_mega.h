@@ -8,12 +8,20 @@
 #define Edge_Line           1
 #define Normal_Line         2
 #define Crossroads_Line     3
+#define Serial_Line 0
+#define I2C_Line    1
 
 //MDM control system
 #define no_motion   0
 #define stop        1
-#define black       2
-#define RR_Spead_195    0.0020311   //Reference rotation speed 195:1 angle / 1duty ratio * 1ms
+#define break       2
+#define RR_Spead_195    0.002119053 //Reference rotation speed 195:1 angle / 1duty ratio * 1ms
+#define RR_Spead_100    0.001770711 //Reference rotation speed 100:1 angle / 1duty ratio * 1ms
+#define RR_Spead_180    0.003095506 //Reference rotation speed 172:1 angle / 1duty ratio * 1ms
+
+//main bord type
+#define Arduino_Mega_2560   0
+#define Arduino_Due         1
 
 //LED
 #define ON      1
@@ -53,11 +61,6 @@
 //  12_D53_23   22_D47_73   32_A10_32   42_D37_82   52_D31_51
 //
 //  11_A15_13   21_D49_63   31_A11_22   41_D39_72   51_A06_41
-
-//color sensor
-//  A15 GIC01   A06 GIC02
-//
-//  A13 GIC04   A04 GIC03
 
 //VL53L0X
 //      1                   5   6

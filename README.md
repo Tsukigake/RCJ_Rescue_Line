@@ -14,7 +14,7 @@ kamiokanndeです！
 
 本製品、または本資料に掲載されている技術情報を、大量破壊兵器の開発等の目的、軍事利用の目的、あるいはその他軍事用途の目的で使用しないでください。
 
-ご質問などは https://twitter.com/kamiokannde1 までDMをしていただけたら幸いです。
+ご質問などは https://twitter.com/kamiokannde829 までDMをしていただけたら幸いです。
 
 Kaiyo Academy Robot Club Rescue Department Manager (12th)
 

@@ -16,7 +16,7 @@ kamiokanndeです！
 
 ご質問などは https://twitter.com/kamiokannde1 までDMをしていただけたら幸いです。
 
-Kaiyo Academy Robot Club Rescue Department Manager (2021)
+Kaiyo Academy Robot Club Rescue Department Manager (12th)
 
 ## License
 MIT

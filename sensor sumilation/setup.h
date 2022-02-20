@@ -7,21 +7,19 @@
 #define Blank_Line          0
 #define Edge_Line           1
 #define Normal_Line         2
-#define Crossroads_Line     3
+#define Crossroads_Line      3
 #define Serial_Line 0
 #define I2C_Line    1
 
 //MDM control system
 #define no_motion   0
 #define stop        1
-#define break       2
+#define motor_break     2
 #define RR_Spead_195    0.002119053 //Reference rotation speed 195:1 angle / 1duty ratio * 1ms
 #define RR_Spead_100    0.001770711 //Reference rotation speed 100:1 angle / 1duty ratio * 1ms
 #define RR_Spead_180    0.003095506 //Reference rotation speed 172:1 angle / 1duty ratio * 1ms
 
-//main bord type
-#define Arduino_Mega_2560   0
-#define Arduino_Due         1
+#define M_PI 3.141592
 
 //LED
 #define ON      1
@@ -32,7 +30,7 @@
 #define RED     1
 
 //VL53L0X
-#define DEFAULT                 0
+#define DEFAULT_mode                0
 #define LONG_RANGE              1
 #define HIGH_SPEED              2
 #define HIGH_ACCURACY           3
@@ -40,16 +38,18 @@
 #define coordinate_setup_mode   1
 #define coordinate_mode         2
 
+
 //Line sensor
 #define ANALOG  0
 #define DIGITAL 1
-#define ANALOG_THRESHOLD    10
+#define ANALOG_THRESHOLD    100
 
 //I2C
 #define Arduino_maga    0x10
 #define Arduino_nano    0x11	
 #define M5stack_core2   0x12
 #define BSCS            0x13
+
 
 //line sensor
 //  15_A13_53   25_D43_12   35_A08_62   45_D33_31   55_A04_81
@@ -65,6 +65,7 @@
 //VL53L0X
 //      1                   5   6
 //
+
 //  4       2           7           8
 //
 //      3

@@ -147,7 +147,7 @@ void setup(){
     //randomSeed(analogRead(0));
     
     //VL53L0X void setup
-    /*for(int i = 0;i < SENSOR_NUM;i++){
+    for(int i = 0;i < SENSOR_NUM;i++){
         pinMode(GPIO_MASK_ARRAY[i],OUTPUT);
         digitalWrite(GPIO_MASK_ARRAY[i],HIGH);
         delay(100);
@@ -170,14 +170,13 @@ void setup(){
             }
         }
         digitalWrite(GPIO_MASK_ARRAY[i],LOW);
-    }*/
+    }
     //LDM46165CH_control_system(OFF,OFF,ON,OFF,1000);
     LDM46165CH_control_system(ON,OFF,OFF,OFF,0);
     //Line_Sensor_get_threshold();
 }
 
 void loop(){
-    /*
     loop_control_system(start);
     Lin_sensor_get_value(DIGITAL,1);
     Line_Sensor_serial_print();
@@ -321,7 +320,7 @@ void loop(){
             Main_motor_control_system(main_speed,0,0,running_time,stop);
         }
         loop_control_system(stop);
-    }*/
+    }
     delay(10000);
 }
 

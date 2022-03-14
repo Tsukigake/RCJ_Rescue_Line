@@ -1,1 +1,6 @@
-﻿  sensor sumilation.vcxproj -> C:\Users\Mitsuyoshi Sugaya\Desktop\poseidon\sensor sumilation\x64\Debug\sensor sumilation.exe
+﻿  main.c
+C:\Users\Mitsuyoshi Sugaya\Desktop\poseidon\sensor sumilation\set_color.h(1,1): warning C4828: The file contains a character starting at offset 0x350 that is illegal in the current source character set (codepage 932).
+C:\Users\Mitsuyoshi Sugaya\Desktop\poseidon\sensor sumilation\main.c(52,54): warning C4244: 'function': conversion from 'double' to 'size_t', possible loss of data
+C:\Users\Mitsuyoshi Sugaya\Desktop\poseidon\sensor sumilation\main.c(54,54): warning C4244: 'function': conversion from 'double' to 'size_t', possible loss of data
+C:\Users\Mitsuyoshi Sugaya\Desktop\poseidon\sensor sumilation\main.c(150,34): warning C4101: 'running_distance': unreferenced local variable
+  sensor sumilation.vcxproj -> C:\Users\Mitsuyoshi Sugaya\Desktop\poseidon\sensor sumilation\x64\Debug\sensor sumilation.exe

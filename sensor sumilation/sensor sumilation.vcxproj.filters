@@ -23,5 +23,8 @@
     <ClInclude Include="setup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="set_color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

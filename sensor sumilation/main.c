@@ -1,27 +1,10 @@
-/*
-The MIT License (MIT)
-Copyright (c) 2015 bpyamasinn.
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <conio.h>
+#include <windows.h>
 #include "setup.h"
+#include "set_color.h"
 
 double main_speed = 50;
 
@@ -167,56 +150,93 @@ int main(void)
         double running_time = 0, running_distance;
         //Main_motor_control_system(main_speed,0,0,running_time,stop);
     }
+
+    printf("\n");
+    printf("The coordinate is array number of the sensor\n");
 }
 
 void Line_Sensor_serial_print() {
     Line_Sensor_value();
     printf("Digital \n");
     printf("\n");
+    printf("y\n");
+    printf("\n");
+    HANDLE hStdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     for (int i = 4; i >= 0; i--) {
         for (int p = 0; p < 5; p++) {
             if (p == 4) {
-                printf("%d\n",Sensor_Value.Digital_reflect[p][i]);
+                //printf("%d\n",Sensor_Value.Digital_reflect[p][i]);
+                if (Sensor_Value.Digital_reflect[p][i] == 0) {
+                    SET(COLOR, BACKGROUND_GREEN | T_BLACK);
+                }
+                else {
+                    SET(COLOR, BACKGROUND_RED | T_BLACK);
+                }
+                printf(" \n");
+                SET(COLOR, T_BLACK | T_WHITE);
+            }
+            else if (p == 0) {
+                printf("%d  ", i);
+                if (Sensor_Value.Digital_reflect[p][i] == 0) {
+                    SET(COLOR, BACKGROUND_GREEN | T_BLACK);
+                }
+                else {
+                    SET(COLOR, BACKGROUND_RED | T_BLACK);
+                }
+                printf(" ");
+                SET(COLOR, T_BLACK | T_WHITE);
+                printf("   ");
             }
             else {
-                printf("%d",Sensor_Value.Digital_reflect[p][i]);
+                //printf("%d",Sensor_Value.Digital_reflect[p][i]);
+                //printf("   ");
+                if (Sensor_Value.Digital_reflect[p][i] == 0) {
+                    SET(COLOR, BACKGROUND_GREEN | T_BLACK);
+                }
+                else {
+                    SET(COLOR, BACKGROUND_RED | T_BLACK);
+                }
+                printf(" ");
+                SET(COLOR, T_BLACK | T_WHITE);
                 printf("   ");
             }
         }
         printf("\n");
     }
+    printf("   0   1   2   3   4   x\n");
+    printf("\n");
 }
 
 void Line_Sensor_value() {
-    Sensor_Value.Digital_reflect[0][0] = 1;
+    Sensor_Value.Digital_reflect[0][0] = 0;
     Sensor_Value.Digital_reflect[0][1] = 0;
     Sensor_Value.Digital_reflect[0][2] = 0;
     Sensor_Value.Digital_reflect[0][3] = 0;
     Sensor_Value.Digital_reflect[0][4] = 0;
 
     Sensor_Value.Digital_reflect[1][0] = 0;
-    Sensor_Value.Digital_reflect[1][1] = 1;
-    Sensor_Value.Digital_reflect[1][2] = 1;
+    Sensor_Value.Digital_reflect[1][1] = 0;
+    Sensor_Value.Digital_reflect[1][2] = 0;
     Sensor_Value.Digital_reflect[1][3] = 0;
     Sensor_Value.Digital_reflect[1][4] = 0;
 
     Sensor_Value.Digital_reflect[2][0] = 0;
-    Sensor_Value.Digital_reflect[2][1] = 0;
+    Sensor_Value.Digital_reflect[2][1] = 1;
     Sensor_Value.Digital_reflect[2][2] = 1;
-    Sensor_Value.Digital_reflect[2][3] = 1;
+    Sensor_Value.Digital_reflect[2][3] = 0;
     Sensor_Value.Digital_reflect[2][4] = 0;
 
-    Sensor_Value.Digital_reflect[3][0] = 0;
-    Sensor_Value.Digital_reflect[3][1] = 0;
-    Sensor_Value.Digital_reflect[3][2] = 0;
+    Sensor_Value.Digital_reflect[3][0] = 1;
+    Sensor_Value.Digital_reflect[3][1] = 1;
+    Sensor_Value.Digital_reflect[3][2] = 1;
     Sensor_Value.Digital_reflect[3][3] = 1;
-    Sensor_Value.Digital_reflect[3][4] = 1;
+    Sensor_Value.Digital_reflect[3][4] = 0;
 
     Sensor_Value.Digital_reflect[4][0] = 0;
     Sensor_Value.Digital_reflect[4][1] = 0;
-    Sensor_Value.Digital_reflect[4][2] = 0;
-    Sensor_Value.Digital_reflect[4][3] = 0;
-    Sensor_Value.Digital_reflect[4][4] = 0;
+    Sensor_Value.Digital_reflect[4][2] = 1;
+    Sensor_Value.Digital_reflect[4][3] = 1;
+    Sensor_Value.Digital_reflect[4][4] = 1;
 }
 
 
